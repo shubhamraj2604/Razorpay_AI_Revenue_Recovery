@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { transactions, recoveryAttempts } from "@/db/schema";
+import { transactions, recoveryAttempts, agentActions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { generateId } from "@/lib/utils";
-import { createAuditLog, executeRecovery } from "@/services/recovery-engine";
+import { createAuditLog, executeRecovery, executePaymentLinkRecovery } from "@/services/recovery-engine";
 
 // ============================================
 // HUMAN REVIEW API
@@ -72,7 +72,30 @@ export async function POST(request: NextRequest) {
         .set({ status: "FAILED", updatedAt: new Date() })
         .where(eq(transactions.id, transactionId));
 
-      const result = await executeRecovery(transactionId);
+      // Retrieve previous AI decision context to pass to executePaymentLinkRecovery
+      const actionRow = await db
+        .select()
+        .from(agentActions)
+        .where(eq(agentActions.transactionId, transactionId))
+        .limit(1);
+        
+      const aiDecision = {
+        classification: actionRow[0]?.classification || "UNKNOWN",
+        recoverability: actionRow[0]?.recoverability || "MEDIUM",
+        confidence: actionRow[0]?.confidence || 1.0,
+        recommended_action: "PAYMENT_LINK" as const,
+        requires_user_action: true,
+        reason: actionRow[0]?.reason || "Manual human override",
+      };
+
+      const policyResult = {
+        approved: true,
+        action: "EXECUTE" as const,
+        reason: "Manual human override approved this action.",
+        checks: [],
+      };
+
+      const result = await executePaymentLinkRecovery(transactionId, tx[0], aiDecision, policyResult);
 
       return NextResponse.json({
         status: "approved",

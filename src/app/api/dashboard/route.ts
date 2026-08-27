@@ -105,7 +105,8 @@ async function getTransactions() {
   const allTransactions = await db
     .select()
     .from(transactions)
-    .orderBy(desc(transactions.createdAt));
+    .orderBy(desc(transactions.createdAt))
+    .limit(100);
 
   // Enrich with customer data and agent actions
   const enrichedTransactions = await Promise.all(

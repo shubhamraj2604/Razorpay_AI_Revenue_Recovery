@@ -16,10 +16,10 @@ const SCENARIOS = {
   abandoned: {
     customer: { name: "Rahul Sharma", email: "rahul@example.com", phone: "+919876543210" },
     amount: 249900, // ₹2,499 in paise
-    failureReason: "NETWORK_ERROR: Payment failed due to network connectivity issues",
+    failureReason: "INSUFFICIENT_FUNDS: Not enough balance in account",
     paymentMethod: "UPI",
     selfRetry: false,
-    description: "Customer abandons after network error. AI creates payment link.",
+    description: "Customer abandons due to insufficient funds. AI instantly creates payment link.",
   },
   // Scenario B: Customer self-retries → AI stays quiet
   self_retry: {

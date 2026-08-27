@@ -201,6 +201,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
+    // Load benchmark result from localStorage if it exists
+    const savedBenchmark = localStorage.getItem("benchmarkResult");
+    if (savedBenchmark) {
+      try {
+        setBenchmarkResult(JSON.parse(savedBenchmark));
+      } catch (e) {}
+    }
   }, [fetchData]);
 
   const runSimulation = async (scenario: string) => {
@@ -234,6 +241,9 @@ export default function Dashboard() {
         body: JSON.stringify({ transactionId, action }),
       });
       await fetchData();
+      if (selectedTx === transactionId) {
+        await fetchTransactionDetail(transactionId);
+      }
     } catch (error) {
       console.error("Review action failed:", error);
     }
@@ -245,6 +255,7 @@ export default function Dashboard() {
       await fetch("/api/seed", { method: "POST" });
       await fetchData();
       setBenchmarkResult(null); // Clear benchmark on seed
+      localStorage.removeItem("benchmarkResult");
     } catch (error) {
       console.error("Seed failed:", error);
     }
@@ -258,6 +269,7 @@ export default function Dashboard() {
       const data = await res.json();
       if (data.benchmark) {
         setBenchmarkResult(data.benchmark);
+        localStorage.setItem("benchmarkResult", JSON.stringify(data.benchmark));
         await fetchData(); // Refresh dashboard with the 1000 txns
       }
     } catch (error) {
@@ -640,8 +652,8 @@ function AnalyticsTab({
             <h2 className="section-title">Benchmark Engine: Baseline vs. AI</h2>
             <p className="page-subtitle" style={{ margin: "4px 0 0 0" }}>Simulate 1,000 transactions to prove AI ROI.</p>
           </div>
-          <button 
-            className="btn btn-primary" 
+          <button
+            className="btn btn-primary"
             onClick={onRunBenchmark}
             disabled={runningBenchmark}
           >
@@ -653,11 +665,11 @@ function AnalyticsTab({
             <span>{runningBenchmark ? "Running 1,000 Txns..." : "Run Benchmark"}</span>
           </button>
         </div>
-        
+
         {benchmarkResult ? (
           <div style={{ padding: "24px" }}>
             <div style={{ display: "flex", gap: "24px", marginBottom: "24px" }}>
-              
+
               {/* Baseline Card */}
               <div style={{ flex: 1, background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "12px", padding: "20px" }}>
                 <h3 style={{ color: "#ef4444", display: "flex", alignItems: "center", gap: "8px", margin: "0 0 16px 0" }}>
@@ -987,7 +999,7 @@ function TransactionDetail({
                   <span className="detail-label">Recoverability</span>
                   <span className="detail-value" style={{
                     color: aiAction.recoverability === "HIGH" ? "var(--accent-green)" :
-                           aiAction.recoverability === "MEDIUM" ? "var(--accent-yellow)" : "var(--accent-red)"
+                      aiAction.recoverability === "MEDIUM" ? "var(--accent-yellow)" : "var(--accent-red)"
                   }}>
                     {aiAction.recoverability}
                   </span>
@@ -1044,11 +1056,10 @@ function TransactionDetail({
           <ul className="audit-trail">
             {auditTrail.map((log) => (
               <li key={log.id} className="audit-item">
-                <div className={`audit-dot ${
-                  log.event.includes("RECOVERED") || log.event.includes("APPROVED") || log.event.includes("SELF_RESOLVED") ? "success" :
-                  log.event.includes("FAILED") || log.event.includes("REJECTED") ? "error" :
-                  log.event.includes("COOLDOWN") || log.event.includes("AI") ? "info" : "warning"
-                }`} />
+                <div className={`audit-dot ${log.event.includes("RECOVERED") || log.event.includes("APPROVED") || log.event.includes("SELF_RESOLVED") ? "success" :
+                    log.event.includes("FAILED") || log.event.includes("REJECTED") ? "error" :
+                      log.event.includes("COOLDOWN") || log.event.includes("AI") ? "info" : "warning"
+                  }`} />
                 <div className="audit-content">
                   <div className="audit-event">
                     {getEventIcon(log.event)} {formatEvent(log.event)}

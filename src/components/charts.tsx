@@ -257,8 +257,8 @@ export function RecoveryFunnel({ metrics }: { metrics: any }) {
 
   const funnelSteps = [
     { label: "Revenue At Risk", value: metrics.revenueAtRisk, color: "#ef4444", width: "100%" },
-    { label: "Self-Resolved", value: metrics.selfResolvedAmount, color: "#06b6d4", width: `${Math.max(15, (metrics.selfResolvedAmount / Math.max(metrics.revenueAtRisk, 1)) * 100)}%` },
     { label: "Recoverable", value: metrics.recoverableAmount, color: "#f59e0b", width: `${Math.max(15, (metrics.recoverableAmount / Math.max(metrics.revenueAtRisk, 1)) * 100)}%` },
+    { label: "Self-Resolved", value: metrics.selfResolvedAmount, color: "#06b6d4", width: `${Math.max(15, (metrics.selfResolvedAmount / Math.max(metrics.revenueAtRisk, 1)) * 100)}%` },
     { label: "Recovered (AI)", value: metrics.recoveredAmount, color: "#10b981", width: `${Math.max(15, (metrics.recoveredAmount / Math.max(metrics.revenueAtRisk, 1)) * 100)}%` },
   ];
 
