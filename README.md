@@ -339,6 +339,30 @@ MAX_RECOVERY_ATTEMPTS=2
 
 ---
 
+## Dashboard
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+---
+
+## Analytics
+
+![Benchmark](docs/screenshots/benchmark.png)
+
+**Transaction Analytics — Status Distribution & Recovery Strategy Breakdown**
+
+![Charts](docs/screenshots/charts.png)
+
+**Failure Analysis — Reasons & AI Confidence Distribution**
+
+![Failure and Confidence](docs/screenshots/failure_confidence.png)
+
+**Recovery Funnel — Revenue at Risk → Recovered**
+
+![Recovery Funnel](docs/screenshots/funnel.png)
+
+---
+
 ## Demo Scenarios
 
 The dashboard includes 5 simulation buttons to demonstrate different AI behaviors:
