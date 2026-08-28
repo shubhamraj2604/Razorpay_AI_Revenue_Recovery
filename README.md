@@ -124,101 +124,27 @@ Based on the combined AI + Policy decision, the system takes one of three action
 
 ---
 
-## Integration Architecture — How This Becomes a Real Product
+## 🔌 Enterprise Integration Architecture
 
-This system is designed as a **B2B SaaS layer** that sits on top of Razorpay. Here is the production integration flow:
+Our system is designed as a B2B SaaS layer, operating on a seamless 4-step integration loop:
 
-### Step 1: Merchant Onboarding via OAuth
+**1. Authorization (Razorpay OAuth)**
+Merchants click **"Connect with Razorpay"**, and our platform securely authenticates them via Razorpay OAuth. This grants our system scoped, tokenized access to act on their behalf, ensuring enterprise-grade security and frictionless onboarding.
 
-```
-Merchant
-   │
-   │  Clicks "Connect with Razorpay"
-   ▼
-Razorpay OAuth Screen
-   │
-   │  Merchant authorizes your app
-   ▼
-Your Backend receives OAuth access token
-   │
-   ▼
-Store merchant credentials securely
-```
+**2. Event Interception (Dynamic Webhook Registration)**
+Once authorized, our backend uses the OAuth token to programmatically register a dedicated webhook on the merchant's Razorpay account. 
+- We **do not** replace their existing webhooks. 
+- We listen *strictly* to `payment.failed` and `payment_link.paid` events. 
+This means we never ingest their 100,000 successful transactions, reducing compute costs while capturing every revenue failure in real-time.
 
-### Step 2: Automatic Webhook Registration
+**3. AI Execution (Model Context Protocol - MCP)**
+When a failure webhook hits, we leverage the **Model Context Protocol (MCP)** to give our Gemini AI Agent secure, standardized tool access to the Razorpay API. Through the MCP server, the AI autonomously:
+- Analyzes the failure context.
+- Provision a new, uniquely tracked Razorpay **Payment Link**.
+- Attaches the original failed `transaction_id` into the link's metadata notes for tracking.
 
-Once authorized, our backend uses the merchant's token to register a webhook on their Razorpay account:
-
-```
-POST /v2/accounts/{merchant_id}/webhooks
-
-{
-  "url": "https://api.recoveryagent.com/webhooks/razorpay",
-  "events": [
-    "payment.failed",
-    "payment_link.paid"
-  ]
-}
-```
-
-This means:
-- The merchant's **existing** webhooks continue working untouched.
-- Our system receives a **copy** of only the events we care about.
-- We don't process 100,000 successful payments — only the failures.
-
-### Step 3: Multi-Tenant Event Processing
-
-```
-              Razorpay
-                 │
-       ┌─────────┴──────────┐
-       ▼                    ▼
-Merchant's own           OUR webhook
-webhook (unchanged)      (centralized)
-                            │
-                            ▼
-                     Identify merchant
-                     from account_id
-                            │
-                            ▼
-                   Load merchant config
-                   (AI rules, limits)
-                            │
-                            ▼
-                     Run AI Pipeline
-                            │
-                 ┌──────────┼──────────┐
-                 ▼          ▼          ▼
-            Auto-Retry  Send Link   Escalate
-                            │
-                            ▼
-                  Customer pays via link
-                            │
-                            ▼
-                  payment_link.paid webhook
-                            │
-                            ▼
-                  Match via notes.transaction_id
-                            │
-                            ▼
-                  Mark as RECOVERED ✅
-```
-
-### How We Track Recovery Links Back to Original Failures
-
-When our system creates a Razorpay payment link, we attach metadata in the `notes` field:
-
-```javascript
-razorpay.paymentLink.create({
-  amount: 249900,
-  notes: {
-    transaction_id: "TX_12345",    // Original failed transaction
-    recovery_type: "AI_RECOVERY"
-  }
-});
-```
-
-When the customer pays through this link, Razorpay sends a `payment_link.paid` webhook that includes these same notes. Our system reads `notes.transaction_id`, finds `TX_12345` in the database, and marks it as recovered. **Zero polling. Fully event-driven.**
+**4. Closing the Loop (Payment Links)**
+When the customer successfully pays the AI-generated link, Razorpay fires a `payment_link.paid` webhook back to our server. Because our MCP server embedded the original `transaction_id` in the metadata notes, our backend instantly maps the successful payment back to the original failure, marking the revenue as `RECOVERED` with **zero database polling required.**
 
 ---
 

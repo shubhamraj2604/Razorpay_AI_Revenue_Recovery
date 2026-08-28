@@ -68,6 +68,16 @@ Return this exact JSON structure:
 }`;
 
 /**
+ * Masks Personally Identifiable Information (PII) before sending to LLM.
+ * Replaces names with initials, or simply returns [REDACTED].
+ */
+function maskPII(text: string | null): string {
+  if (!text) return "Unknown";
+  // Just show first initial for safety
+  return text.charAt(0) + "*** [REDACTED]";
+}
+
+/**
  * Run AI diagnosis on a failed transaction.
  * Returns a structured decision with classification, confidence, and recommended action.
  */
@@ -94,7 +104,7 @@ FAILED TRANSACTION:
 - Previous Retry Attempts: ${transaction.retryCount}
 
 CUSTOMER CONTEXT:
-- Name: ${customerContext.name}
+- Name: ${maskPII(customerContext.name)}
 - Total Payments: ${customerContext.totalPayments}
 - Successful Payments: ${customerContext.successfulPayments}
 - Success Rate: ${(customerContext.successRate * 100).toFixed(1)}%

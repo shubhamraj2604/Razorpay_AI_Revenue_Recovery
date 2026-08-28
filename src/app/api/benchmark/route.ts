@@ -46,12 +46,12 @@ export async function POST() {
 
     // 2. Setup Benchmark Tracking
     const NUM_TX = 1000;
-    
+
     // Baseline Metrics (Dumb Rule)
     let baselineActions = 0; // Sends link to EVERYONE
     let baselineRecovered = 0;
     let baselineSpam = 0;
-    
+
     // AI Metrics
     let aiActions = 0; // Only targeted links
     let aiRecovered = 0;
@@ -65,7 +65,7 @@ export async function POST() {
       email: `customer${i + 1}@example.com`,
       phone: `+9198765${String(i).padStart(5, '0')}`,
     }));
-    
+
     // Insert customers in batches to avoid query size limits
     for (let i = 0; i < generatedCustomers.length; i += 10) {
       await db.insert(customers).values(generatedCustomers.slice(i, i + 10));
@@ -81,12 +81,12 @@ export async function POST() {
       const customer = generatedCustomers[Math.floor(Math.random() * generatedCustomers.length)];
       const amount = getRandomAmount();
       const failure = getRandomFailure();
-      
+
       // Simulate real-world probabilities
       const willSelfRetry = Math.random() < 0.45; // 45% of people self-retry
       const isHighValue = amount > 1000000; // > ₹10,000
       const isFraud = failure.reason === "FRAUD_SUSPECTED";
-      
+
       const txId = generateId("TX");
       let status: any = "FAILED";
       let aiAction = "NO_ACTION";
@@ -98,7 +98,7 @@ export async function POST() {
       baselineActions++;
       if (willSelfRetry) {
         baselineSpam++; // Spamming someone who was already retrying!
-        baselineRecovered += amount; 
+        baselineRecovered += amount;
       } else if (failure.temp && !isFraud) {
         // 30% conversion on dumb links
         if (Math.random() < 0.3) baselineRecovered += amount;
@@ -124,7 +124,7 @@ export async function POST() {
         confidence = 0.85;
         recoverability = "HIGH";
         aiActions++;
-        
+
         // AI has higher conversion (50%) because links are targeted and contextual
         if (Math.random() < 0.5) {
           status = "RECOVERED";
@@ -184,12 +184,12 @@ export async function POST() {
     for (let i = 0; i < txBatch.length; i += 200) {
       await db.insert(transactions).values(txBatch.slice(i, i + 200));
     }
-    
+
     // Insert actions in batches of 200
     for (let i = 0; i < actionBatch.length; i += 200) {
       await db.insert(agentActions).values(actionBatch.slice(i, i + 200));
     }
-    
+
     // Insert attempts in batches of 200
     for (let i = 0; i < attemptBatch.length; i += 200) {
       await db.insert(recoveryAttempts).values(attemptBatch.slice(i, i + 200));
