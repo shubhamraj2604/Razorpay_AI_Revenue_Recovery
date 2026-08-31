@@ -9,29 +9,34 @@
 
 ---
 
-### SCENE 1: The Problem & The Solution (0:00 - 0:45)
-**Screen Action:** Start on the main Dashboard view. Click the "Simulate Webhooks" button so transactions start pouring in live. Leave the mouse alone and let it run in the background.
+### SCENE 1: The Architecture & The Prototype (0:00 - 0:45)
+**Screen Action:** Start with your **Architecture Diagram** open on the screen. Leave it up for about 10-15 seconds while you introduce the project.
 
 **Audio Script:** 
-"Hi judges. Payment failures are a massive leak in e-commerce revenue. Traditional software tries to fix this by blindly spamming users with retry emails the second a transaction fails. 
+"Hi judges. Payment failures are a massive leak in e-commerce revenue, and traditional software tries to fix this by blindly spamming users with retry emails. 
 
-But customers are humans—sometimes they are already trying another card, or fixing their Wi-Fi. Spamming them causes frustration and abandonment.
+We built an **Agentic AI Recovery system**. As you can see from our architecture, we use OAuth, Webhooks, and a Google Gemini AI Agent powered by MCP, sandboxed by a strict Policy Engine. 
 
-This is why we built an **Agentic AI Recovery system** that doesn't just react to failures—it understands context."
+You can view this full architecture diagram in detail on our GitHub repo, but for now, let's move straight into the live prototype to see it in action."
 
 ---
 
-### SCENE 2: Architecture & Smart Silence (0:45 - 1:45)
-**Screen Action:** Keep the dashboard visible as transactions process. Move your mouse to point at a transaction that says `SELF_RESOLVED` and hover over it.
+### SCENE 2: Smart Silence & Live Data (0:45 - 1:45)
+**Screen Action:** Switch your screen to the **Main Dashboard**. Click the **"Customer Abandons"** button, and then click the **"Customer Self-Retries"** button.
 
 **Audio Script:**
-"Our architecture sits on top of Razorpay as a B2B SaaS layer. Here is how it works:
+"Our B2B SaaS layer listens to Razorpay `payment.failed` webhooks without disrupting the merchant's existing systems. 
 
-First, a merchant connects their Razorpay account via **OAuth**. We dynamically register a webhook to listen *only* to `payment.failed` events. This means zero polling and zero disruption to their existing systems.
+When a failure hits, we extract the entire context directly from Razorpay—why it failed and the transaction details. This rich context is processed by the AI.
 
-When a failure webhook hits, we pass the event to a Google Gemini AI Agent powered by the **Model Context Protocol (MCP)**. The AI looks at the customer's history. *This* is where the magic happens.
+*This* is where the magic happens. Notice this transaction right here."
 
-Notice this transaction right here. The AI realized the customer is already trying again. Instead of spamming them, it exercised **Smart Silence**. Restraint is a feature, and it saves customer loyalty."
+**Screen Action:** Move your mouse to point at the new transaction that just appeared as `SELF_RESOLVED` and hover over it.
+
+**Audio Script:**
+"The AI realized the customer is already trying again based on that context. Instead of spamming them, it exercised **Smart Silence**. Restraint is a feature, and it saves customer loyalty.
+
+And if the AI makes a recommendation, it must pass through our deterministic Policy Engine which enforces the merchant's hard limits before executing."
 
 ---
 
@@ -48,12 +53,12 @@ When the customer pays the link via WhatsApp or email, Razorpay sends us a `paym
 ---
 
 ### SCENE 4: Enterprise Compliance (2:30 - 3:30)
-**Screen Action:** Switch to VS Code. Show the `src/db/schema.ts` file (pointing to the Webhook Events table) and the `src/services/ai-agent.ts` file (pointing to the `maskPII` function).
+**Screen Action:** Switch back to the dashboard and click the **"Human Review"** or **"Activity Feed"** tab on the left sidebar to show the depth of the application. 
 
 **Audio Script:**
 "We also built this for enterprise scale. A Razorpay engineer will ask: *'Is this compliant and secure?'* The answer is yes.
 
-We implemented strict PII masking—scrubbing names and phone numbers before data ever touches the LLM. 
+Under the hood, we implemented strict PII masking—scrubbing names and phone numbers before data ever touches the LLM. 
 
 We also built cryptographic signature verification and database idempotency into our webhook handlers, ensuring we are immune to replay attacks."
 

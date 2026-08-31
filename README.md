@@ -20,40 +20,7 @@ There is no intelligence in the current recovery flow. A ₹200 network timeout 
 
 An **AI-powered recovery agent** that sits between Razorpay and the merchant. It intercepts every failed payment, builds context around the failure, and makes a structured decision:
 
-```
-┌─────────────────────────────────────────────────────┐
-│                  Payment Fails                      │
-│                       │                             │
-│                       ▼                             │
-│              ┌─────────────────┐                    │
-│              │  Watch & Wait   │ ← Cooldown period  │
-│              │  (Is customer   │   to detect if     │
-│              │   retrying?)    │   customer fixes    │
-│              └────────┬────────┘   it themselves     │
-│                       │                             │
-│            ┌──────────┴──────────┐                  │
-│            ▼                     ▼                  │
-│     Customer retried       No retry detected        │
-│     on their own                 │                  │
-│            │                     ▼                  │
-│            ▼            ┌────────────────┐          │
-│       DO NOTHING        │  AI Agent      │          │
-│       (Smart silence)   │  (Gemini 3.6)  │          │
-│                         └───────┬────────┘          │
-│                                 │                   │
-│                                 ▼                   │
-│                        ┌────────────────┐           │
-│                        │ Policy Engine  │           │
-│                        │ (Safety Rules) │           │
-│                        └───────┬────────┘           │
-│                                │                    │
-│                    ┌───────────┼───────────┐        │
-│                    ▼           ▼           ▼        │
-│               Auto-Retry   Send Link   Escalate    │
-│               (Gateway     (Email to   (Human      │
-│                errors)     customer)    Review)     │
-└─────────────────────────────────────────────────────┘
-```
+![Detailed Logic Flowchart](docs/detailed_flowchart.png)
 
 ---
 
@@ -125,6 +92,8 @@ Based on the combined AI + Policy decision, the system takes one of three action
 ---
 
 ## 🔌 Enterprise Integration Architecture
+
+![High-Level Integration Architecture](docs/high_level_architecture.png)
 
 Our system is designed as a B2B SaaS layer, operating on a seamless 4-step integration loop:
 
